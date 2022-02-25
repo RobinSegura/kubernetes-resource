@@ -1,19 +1,13 @@
 # kubernetes-resource
 
-[![Build Status](https://travis-ci.org/zlabjp/kubernetes-resource.svg?branch=master)](https://travis-ci.org/zlabjp/kubernetes-resource)
-
 A Concourse resource for controlling the Kubernetes cluster.
-
-*This resource supports AWS EKS. (kubernetes-sigs/aws-iam-authenticator@v0.4.0)*
 
 ## Versions
 
 The version of this resource corresponds to the version of kubectl. We recommend using different version depending on the kubernetes version of the cluster.
 
- - `zlabjp/kubernetes-resource:1.17` ([stable-1.17](https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt))
- - `zlabjp/kubernetes-resource:1.16` ([stable-1.16](https://storage.googleapis.com/kubernetes-release/release/stable-1.16.txt))
- - `zlabjp/kubernetes-resource:1.15` ([stable-1.15](https://storage.googleapis.com/kubernetes-release/release/stable-1.15.txt))
- - `zlabjp/kubernetes-resource:latest` ([latest](https://storage.googleapis.com/kubernetes-release/release/latest.txt))
+ - `robinsegura/kubernetes-resource:1.21` ([stable-1.21](https://storage.googleapis.com/kubernetes-release/release/stable-1.21.txt))
+ - `robinsegura/kubernetes-resource:latest` ([latest](https://storage.googleapis.com/kubernetes-release/release/latest.txt))
 
 ## Source Configuration
 
@@ -46,12 +40,6 @@ The version of this resource corresponds to the version of kubectl. We recommend
     certificate_authority_file: ca_certs.crt
     ```
 - `insecure_skip_tls_verify`: *Optional.* If true, the API server's certificate will not be checked for validity. This will make your HTTPS connections insecure. Defaults to `false`.
-- `use_aws_iam_authenticator`: *Optional.* If true, the aws_iam_authenticator, required for connecting with EKS, is used. Requires `aws_eks_cluster_name`. Defaults to `false`.
-- `aws_eks_cluster_name`: *Optional.* the AWS EKS cluster name, required when `use_aws_iam_authenticator` is true.
-- `aws_eks_assume_role`: *Optional.* the AWS IAM role ARN to assume.
-- `aws_access_key_id`: *Optional.* AWS access key to use for iam authenticator.
-- `aws_secret_access_key`: *Optional.* AWS secret key to use for iam authenticator.
-- `aws_session_token`: *Optional.* AWS session token (assumed role) to use for iam authenticator.
 
 ## Behavior
 

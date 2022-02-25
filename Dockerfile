@@ -1,6 +1,4 @@
-FROM ubuntu:18.04
-
-MAINTAINER Kazuki Suda <ksuda@zlab.co.jp>
+FROM alpine:3.15.0
 
 ARG KUBERNETES_VERSION=
 
@@ -8,19 +6,15 @@ ARG KUBERNETES_VERSION=
 ARG AWS_IAM_AUTHENTICATOR_VERSION=v0.4.0
 
 RUN set -x && \
-    apt-get update && \
-    apt-get install -y jq curl && \
+    apk update && \
+    apk add --no-cache curl jq && \
     # Download and install kubectl
     [ -z "$KUBERNETES_VERSION" ] && KUBERNETES_VERSION=$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt) ||: && \
     curl -s -LO https://storage.googleapis.com/kubernetes-release/release/${KUBERNETES_VERSION}/bin/linux/amd64/kubectl && \
     chmod +x ./kubectl && \
     mv ./kubectl /usr/local/bin/kubectl && \
     kubectl version --client && \
-    # Download and install aws-iam-authenticator
-    curl -s -L -o /usr/local/bin/aws-iam-authenticator "https://github.com/kubernetes-sigs/aws-iam-authenticator/releases/download/${AWS_IAM_AUTHENTICATOR_VERSION}/aws-iam-authenticator_$(echo "$AWS_IAM_AUTHENTICATOR_VERSION" | tr -d v)_linux_amd64" && \
-    chmod +x /usr/local/bin/aws-iam-authenticator && \
-    aws-iam-authenticator version && \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/cache/apk/* 
 
 RUN mkdir -p /opt/resource
 COPY assets/* /opt/resource/

@@ -78,45 +78,6 @@ setup_kubectl() {
     exe kubectl config set-context "$CONTEXT_NAME" --cluster="$CLUSTER_NAME" --user "$AUTH_NAME"
 
     exe kubectl config use-context "$CONTEXT_NAME"
-
-    # Optional. Use the AWS EKS authenticator
-    local use_aws_iam_authenticator
-    use_aws_iam_authenticator="$(jq -r '.source.use_aws_iam_authenticator // ""' < "$payload")"
-    local aws_eks_cluster_name
-    aws_eks_cluster_name="$(jq -r '.source.aws_eks_cluster_name // ""' < "$payload")"
-    local aws_eks_assume_role
-    aws_eks_assume_role="$(jq -r '.source.aws_eks_assume_role // ""' < "$payload")"
-    if [[ "$aws_eks_assume_role" ]]; then
-      aws_eks_assume_role="- -r
-      - ${aws_eks_assume_role}"
-    fi
-    if [[ "$use_aws_iam_authenticator" == "true" ]]; then
-      if [ -z "$aws_eks_cluster_name" ]; then
-        echoerr 'You must specify aws_eks_cluster_name when using aws_iam_authenticator.'
-        exit 1
-      fi
-      local kubeconfig_file_aws
-      kubeconfig_file_aws="$(mktemp "$TMPDIR/kubernetes-resource-kubeconfig-aws.XXXXXX")"
-      cat <<EOF > "$kubeconfig_file_aws"
-users:
-- name: ${AUTH_NAME}
-  user:
-    exec:
-      apiVersion: client.authentication.k8s.io/v1alpha1
-      args:
-      - token
-      - -i
-      - ${aws_eks_cluster_name}
-      ${aws_eks_assume_role}
-      command: aws-iam-authenticator
-      env: null
-EOF
-      # Merge two kubeconfig files
-      local tmpfile
-      tmpfile="$(mktemp)"
-      KUBECONFIG="$KUBECONFIG:$kubeconfig_file_aws" kubectl config view --flatten > "$tmpfile"
-      cat "$tmpfile" > "$KUBECONFIG"
-    fi
   fi
 
   # Optional. The namespace scope. Defaults to default if doesn't specify in kubeconfig.
