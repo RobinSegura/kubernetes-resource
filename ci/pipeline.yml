@@ -28,13 +28,13 @@ resources:
 - name: kubernetes-resource
   type: git
   source:
-    uri: git://github.com/zlabjp/kubernetes-resource.git
+    uri: git://github.com/robinsegura/kubernetes-resource.git
     branch: master
 
 - name: kubernetes-resource-release
   type: git
   source:
-    uri: git://github.com/zlabjp/kubernetes-resource.git
+    uri: git://github.com/robinsegura/kubernetes-resource.git
     branch: master
     tag_filter: v*
 
@@ -44,34 +44,18 @@ resources:
     url: ((slack-url))
 
 
-- name: kubernetes-resource-image-1.15
+- name: kubernetes-resource-image-1.21.3
   type: docker-image
   source:
-    repository: zlabjp/kubernetes-resource
-    tag: "1.15"
-    username: ((docker-username))
-    password: ((docker-password))
-
-- name: kubernetes-resource-image-1.16
-  type: docker-image
-  source:
-    repository: zlabjp/kubernetes-resource
-    tag: "1.16"
-    username: ((docker-username))
-    password: ((docker-password))
-
-- name: kubernetes-resource-image-1.17
-  type: docker-image
-  source:
-    repository: zlabjp/kubernetes-resource
-    tag: "1.17"
+    repository: robinsegura/kubernetes-resource
+    tag: "1.21.3"
     username: ((docker-username))
     password: ((docker-password))
 
 - name: kubernetes-resource-image-latest
   type: docker-image
   source:
-    repository: zlabjp/kubernetes-resource
+    repository: robinsegura/kubernetes-resource
     tag: "latest"
     username: ((docker-username))
     password: ((docker-password))
@@ -80,28 +64,16 @@ resources:
 - name: kubernetes-resource-image-edge
   type: docker-image
   source:
-    repository: zlabjp/kubernetes-resource
+    repository: robinsegura/kubernetes-resource
     tag: edge
     username: ((docker-username))
     password: ((docker-password))
 
 
-- name: stable-1.15
+- name: stable-1.21
   type: file-url
   source:
-    url: https://storage.googleapis.com/kubernetes-release/release/stable-1.15.txt
-    filename: version
-
-- name: stable-1.16
-  type: file-url
-  source:
-    url: https://storage.googleapis.com/kubernetes-release/release/stable-1.16.txt
-    filename: version
-
-- name: stable-1.17
-  type: file-url
-  source:
-    url: https://storage.googleapis.com/kubernetes-release/release/stable-1.17.txt
+    url: https://storage.googleapis.com/kubernetes-release/release/stable-1.21.txt
     filename: version
 
 - name: latest
@@ -117,7 +89,7 @@ jobs:
   serial: true
   plan:
   - do:
-    - aggregate:
+    - in_parallel:
       - get: kubernetes-resource
         trigger: true
       - get: ubuntu-18.04
@@ -151,23 +123,23 @@ jobs:
           Failure! $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
 
 
-- name: build-kubernetes-resource-image-1.15
+- name: build-kubernetes-resource-image-1.21
   public: true
   serial: true
   plan:
   - do:
-    - aggregate:
+    - in_parallel:    
       - get: kubernetes-resource-release
         trigger: true
       - get: ubuntu-18.04
         params: {save: true}
         trigger: true
-      - get: stable-1.15
+      - get: stable-1.21
         trigger: true
     - task: build-build-args-file
       file: kubernetes-resource-release/ci/tasks/build-build-args-file.yml
-      input_mapping: {version: stable-1.15}
-    - put: kubernetes-resource-image-1.15
+      input_mapping: {version: stable-1.21}
+    - put: kubernetes-resource-image-1.21.3
       params:
         build: kubernetes-resource-release
         load_base: ubuntu-18.04
@@ -176,7 +148,7 @@ jobs:
       put: notify
       params:
         channel: ((slack-success-channel))
-        username: concourse / kubernetes-resource-image-1.15
+        username: concourse / kubernetes-resource-image-1.21
         icon_emoji: ":dancing-penguin:"
         text: |
           Success! $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
@@ -184,83 +156,7 @@ jobs:
       put: notify
       params:
         channel: ((slack-failure-channel))
-        username: concourse / kubernetes-resource-image-1.15
-        icon_emoji: ":rage:"
-        text: |
-          Failure! $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
-
-- name: build-kubernetes-resource-image-1.16
-  public: true
-  serial: true
-  plan:
-  - do:
-    - aggregate:
-      - get: kubernetes-resource-release
-        trigger: true
-      - get: ubuntu-18.04
-        params: {save: true}
-        trigger: true
-      - get: stable-1.16
-        trigger: true
-    - task: build-build-args-file
-      file: kubernetes-resource-release/ci/tasks/build-build-args-file.yml
-      input_mapping: {version: stable-1.16}
-    - put: kubernetes-resource-image-1.16
-      params:
-        build: kubernetes-resource-release
-        load_base: ubuntu-18.04
-        build_args_file: output/build-args-file
-    on_success:
-      put: notify
-      params:
-        channel: ((slack-success-channel))
-        username: concourse / kubernetes-resource-image-1.16
-        icon_emoji: ":dancing-penguin:"
-        text: |
-          Success! $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
-    on_failure:
-      put: notify
-      params:
-        channel: ((slack-failure-channel))
-        username: concourse / kubernetes-resource-image-1.16
-        icon_emoji: ":rage:"
-        text: |
-          Failure! $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
-
-- name: build-kubernetes-resource-image-1.17
-  public: true
-  serial: true
-  plan:
-  - do:
-    - aggregate:
-      - get: kubernetes-resource-release
-        trigger: true
-      - get: ubuntu-18.04
-        params: {save: true}
-        trigger: true
-      - get: stable-1.17
-        trigger: true
-    - task: build-build-args-file
-      file: kubernetes-resource-release/ci/tasks/build-build-args-file.yml
-      input_mapping: {version: stable-1.17}
-    - put: kubernetes-resource-image-1.17
-      params:
-        build: kubernetes-resource-release
-        load_base: ubuntu-18.04
-        build_args_file: output/build-args-file
-    on_success:
-      put: notify
-      params:
-        channel: ((slack-success-channel))
-        username: concourse / kubernetes-resource-image-1.17
-        icon_emoji: ":dancing-penguin:"
-        text: |
-          Success! $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
-    on_failure:
-      put: notify
-      params:
-        channel: ((slack-failure-channel))
-        username: concourse / kubernetes-resource-image-1.17
+        username: concourse / kubernetes-resource-image-1.21
         icon_emoji: ":rage:"
         text: |
           Failure! $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
@@ -270,7 +166,7 @@ jobs:
   serial: true
   plan:
   - do:
-    - aggregate:
+    - in_parallel:
       - get: kubernetes-resource-release
         trigger: true
       - get: ubuntu-18.04
