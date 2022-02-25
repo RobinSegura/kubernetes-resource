@@ -38,12 +38,6 @@ resources:
     branch: master
     tag_filter: v*
 
-- name: notify
-  type: slack-notification
-  source:
-    url: ((slack-url))
-
-
 - name: kubernetes-resource-image-1.21.3
   type: docker-image
   source:
@@ -105,23 +99,6 @@ jobs:
         build: kubernetes-resource
         load_base: ubuntu-18.04
         build_args_file: output/build-args-file
-    on_success:
-      put: notify
-      params:
-        channel: ((slack-success-channel))
-        username: concourse / kubernetes-resource-image-edge
-        icon_emoji: ":dancing-penguin:"
-        text: |
-          Success! $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
-    on_failure:
-      put: notify
-      params:
-        channel: ((slack-failure-channel))
-        username: concourse / kubernetes-resource:edge
-        icon_emoji: ":rage:"
-        text: |
-          Failure! $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
-
 
 - name: build-kubernetes-resource-image-1.21
   public: true
@@ -144,22 +121,6 @@ jobs:
         build: kubernetes-resource-release
         load_base: ubuntu-18.04
         build_args_file: output/build-args-file
-    on_success:
-      put: notify
-      params:
-        channel: ((slack-success-channel))
-        username: concourse / kubernetes-resource-image-1.21
-        icon_emoji: ":dancing-penguin:"
-        text: |
-          Success! $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
-    on_failure:
-      put: notify
-      params:
-        channel: ((slack-failure-channel))
-        username: concourse / kubernetes-resource-image-1.21
-        icon_emoji: ":rage:"
-        text: |
-          Failure! $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
 
 - name: build-kubernetes-resource-image-latest
   public: true
@@ -182,20 +143,3 @@ jobs:
         build: kubernetes-resource-release
         load_base: ubuntu-18.04
         build_args_file: output/build-args-file
-    on_success:
-      put: notify
-      params:
-        channel: ((slack-success-channel))
-        username: concourse / kubernetes-resource-image-latest
-        icon_emoji: ":dancing-penguin:"
-        text: |
-          Success! $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
-    on_failure:
-      put: notify
-      params:
-        channel: ((slack-failure-channel))
-        username: concourse / kubernetes-resource-image-latest
-        icon_emoji: ":rage:"
-        text: |
-          Failure! $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
-
